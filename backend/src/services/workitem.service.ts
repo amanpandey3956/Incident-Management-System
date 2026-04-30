@@ -2,7 +2,6 @@ import { pgPool } from '../config/db';
 import { getAlertStrategy } from './alert.service';
 import redis from '../config/redis';
 
-// Valid state transitions - State Pattern
 const VALID_TRANSITIONS: Record<string, string[]> = {
   'OPEN': ['INVESTIGATING'],
   'INVESTIGATING': ['RESOLVED'],
@@ -18,15 +17,13 @@ export const createWorkItem = async (componentId: string) => {
 
   const result = await pgPool.query(
     `INSERT INTO work_items (component_id, status, priority)
-     VALUES ($1, 'OPEN', $2)
-     ON CONFLICT DO NOTHING
+     VALUES ($1::text, 'OPEN', $2::text)
      RETURNING *`,
     [componentId, priority]
   );
 
   const workItem = result.rows[0];
   if (workItem) {
-    // Cache in Redis for fast dashboard reads
     await redis.setex(
       `workitem:${workItem.id}`,
       300,
@@ -47,9 +44,8 @@ export const transitionWorkItem = async (
     prevention_steps: string;
   }
 ) => {
-  // Get current status
   const current = await pgPool.query(
-    'SELECT * FROM work_items WHERE id = $1',
+    'SELECT * FROM work_items WHERE id = $1::uuid',
     [workItemId]
   );
 
@@ -66,7 +62,6 @@ export const transitionWorkItem = async (
     );
   }
 
-  // Mandatory RCA check before CLOSED
   if (newStatus === 'CLOSED') {
     if (!rcaData) {
       throw new Error('RCA is mandatory before closing a work item');
@@ -78,41 +73,38 @@ export const transitionWorkItem = async (
       throw new Error('RCA is incomplete. All fields are required.');
     }
 
-    // Calculate MTTR
     const start = new Date(incident_start).getTime();
     const end = new Date(incident_end).getTime();
     const mttrSeconds = Math.floor((end - start) / 1000);
 
-    // Insert RCA
     await pgPool.query(
       `INSERT INTO rca_records 
        (work_item_id, incident_start, incident_end, root_cause_category, fix_applied, prevention_steps)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+       VALUES ($1::uuid, $2::timestamp, $3::timestamp, $4::text, $5::text, $6::text)`,
       [workItemId, incident_start, incident_end, root_cause_category, fix_applied, prevention_steps]
     );
 
-    // Update work item with MTTR
     await pgPool.query(
       `UPDATE work_items 
-       SET status = $1, closed_at = NOW(), mttr_seconds = $2, updated_at = NOW()
-       WHERE id = $3`,
+       SET status = $1::text, closed_at = NOW(), mttr_seconds = $2::int, updated_at = NOW()
+       WHERE id = $3::uuid`,
       [newStatus, mttrSeconds, workItemId]
     );
   } else {
     await pgPool.query(
       `UPDATE work_items 
-       SET status = $1, updated_at = NOW(),
-       resolved_at = CASE WHEN $1 = 'RESOLVED' THEN NOW() ELSE resolved_at END
-       WHERE id = $2`,
+       SET status = $1::text, updated_at = NOW(),
+       resolved_at = CASE WHEN $1::text = 'RESOLVED' THEN NOW() ELSE resolved_at END
+       WHERE id = $2::uuid`,
       [newStatus, workItemId]
     );
   }
 
-  // Invalidate cache
   await redis.del(`workitem:${workItemId}`);
+  await redis.del('dashboard:workitems');
 
   const updated = await pgPool.query(
-    'SELECT * FROM work_items WHERE id = $1',
+    'SELECT * FROM work_items WHERE id = $1::uuid',
     [workItemId]
   );
 
@@ -120,7 +112,6 @@ export const transitionWorkItem = async (
 };
 
 export const getAllWorkItems = async () => {
-  // Try cache first
   const cached = await redis.get('dashboard:workitems');
   if (cached) return JSON.parse(cached);
 
@@ -130,18 +121,16 @@ export const getAllWorkItems = async () => {
      created_at DESC`
   );
 
-  // Cache for 10 seconds
   await redis.setex('dashboard:workitems', 10, JSON.stringify(result.rows));
   return result.rows;
 };
 
 export const getWorkItemById = async (id: string) => {
-  // Try cache first
   const cached = await redis.get(`workitem:${id}`);
   if (cached) return JSON.parse(cached);
 
   const result = await pgPool.query(
-    'SELECT * FROM work_items WHERE id = $1',
+    'SELECT * FROM work_items WHERE id = $1::uuid',
     [id]
   );
   return result.rows[0];
