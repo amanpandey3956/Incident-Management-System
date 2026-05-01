@@ -7,7 +7,7 @@ import { initPostgres, connectMongo } from './config/db';
 import { signalRateLimiter } from './middleware/rateLimiter';
 import { errorHandler } from './middleware/errorHandler';
 import { ingestSignal, getSignals } from './controllers/signal.controller';
-import { listWorkItems, getWorkItem, updateWorkItemStatus } from './controllers/workitem.controller';
+import { listWorkItems, getWorkItem, updateWorkItemStatus, getAggregations } from './controllers/workitem.controller';
 import { healthCheck } from './controllers/health.controller';
 import { startWorker } from './queues/worker';
 import { startMetricsPrinter } from './utils/metrics';
@@ -25,6 +25,7 @@ app.get('/api/signals/:workItemId', getSignals);
 app.get('/api/workitems', listWorkItems);
 app.get('/api/workitems/:id', getWorkItem);
 app.patch('/api/workitems/:id/status', updateWorkItemStatus);
+app.get('/api/aggregations', getAggregations);
 
 app.use(errorHandler);
 
