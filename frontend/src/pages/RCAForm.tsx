@@ -44,63 +44,61 @@ const RCAForm: React.FC = () => {
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '10px 12px',
-    border: '1px solid #ddd', borderRadius: '8px',
-    fontSize: '14px', boxSizing: 'border-box',
-    fontFamily: 'inherit',
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block', marginBottom: '6px',
-    fontSize: '13px', fontWeight: 600, color: '#444',
-  };
-
   return (
-    <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-      <button onClick={() => navigate(-1)} style={{
-        background: 'none', border: 'none', cursor: 'pointer',
-        color: '#666', fontSize: '14px', marginBottom: '16px', padding: 0,
-      }}>
-        ← Back
+    <div className="max-w-2xl mx-auto">
+      {/* Back Button */}
+      <button
+        onClick={() => navigate(-1)}
+        className="text-gray-500 hover:text-gray-900 text-sm mb-4 transition-colors"
+      >
+        &larr; Back
       </button>
 
-      <div style={{
-        backgroundColor: '#fff', borderRadius: '12px',
-        padding: '32px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-      }}>
-        <h2 style={{ margin: '0 0 8px', color: '#1a1a2e' }}>Root Cause Analysis</h2>
-        <p style={{ margin: '0 0 24px', color: '#666', fontSize: '14px' }}>
-          Complete all fields to close this incident. MTTR will be calculated automatically.
-        </p>
+      {/* Form Card */}
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+        <h2 className="text-xl font-bold text-gray-900 mb-1">Root Cause Analysis</h2>
+        <p className="text-sm text-gray-500 mb-6">Complete all fields to close this incident. MTTR will be calculated automatically.</p>
 
         {error && (
-          <div style={{
-            backgroundColor: '#f8d7da', color: '#721c24',
-            padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px',
-          }}>
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
             {error}
           </div>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="space-y-5">
+          {/* Date Fields */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label style={labelStyle}>Incident Start *</label>
-              <input type="datetime-local" name="incident_start"
-                value={form.incident_start} onChange={handleChange} style={inputStyle} />
+              <label className="block mb-2 text-sm font-semibold text-gray-700">Incident Start *</label>
+              <input
+                type="datetime-local"
+                name="incident_start"
+                value={form.incident_start}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none"
+              />
             </div>
             <div>
-              <label style={labelStyle}>Incident End *</label>
-              <input type="datetime-local" name="incident_end"
-                value={form.incident_end} onChange={handleChange} style={inputStyle} />
+              <label className="block mb-2 text-sm font-semibold text-gray-700">Incident End *</label>
+              <input
+                type="datetime-local"
+                name="incident_end"
+                value={form.incident_end}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none"
+              />
             </div>
           </div>
 
+          {/* Root Cause Category */}
           <div>
-            <label style={labelStyle}>Root Cause Category *</label>
-            <select name="root_cause_category"
-              value={form.root_cause_category} onChange={handleChange} style={inputStyle}>
+            <label className="block mb-2 text-sm font-semibold text-gray-700">Root Cause Category *</label>
+            <select
+              name="root_cause_category"
+              value={form.root_cause_category}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none"
+            >
               <option value="">Select a category...</option>
               {ROOT_CAUSE_CATEGORIES.map(c => (
                 <option key={c} value={c}>{c}</option>
@@ -108,30 +106,39 @@ const RCAForm: React.FC = () => {
             </select>
           </div>
 
+          {/* Fix Applied */}
           <div>
-            <label style={labelStyle}>Fix Applied *</label>
-            <textarea name="fix_applied" rows={4}
-              value={form.fix_applied} onChange={handleChange}
+            <label className="block mb-2 text-sm font-semibold text-gray-700">Fix Applied *</label>
+            <textarea
+              name="fix_applied"
+              rows={4}
+              value={form.fix_applied}
+              onChange={handleChange}
               placeholder="Describe what was done to fix the issue..."
-              style={inputStyle} />
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none resize-none"
+            />
           </div>
 
+          {/* Prevention Steps */}
           <div>
-            <label style={labelStyle}>Prevention Steps *</label>
-            <textarea name="prevention_steps" rows={4}
-              value={form.prevention_steps} onChange={handleChange}
+            <label className="block mb-2 text-sm font-semibold text-gray-700">Prevention Steps *</label>
+            <textarea
+              name="prevention_steps"
+              rows={4}
+              value={form.prevention_steps}
+              onChange={handleChange}
               placeholder="Describe steps to prevent this from happening again..."
-              style={inputStyle} />
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 outline-none resize-none"
+            />
           </div>
 
-          <button onClick={handleSubmit} disabled={submitting} style={{
-            backgroundColor: '#e94560', color: '#fff',
-            border: 'none', padding: '14px',
-            borderRadius: '8px', cursor: 'pointer',
-            fontWeight: 700, fontSize: '16px',
-            opacity: submitting ? 0.7 : 1,
-          }}>
-            {submitting ? 'Submitting...' : '✓ Submit RCA & Close Incident'}
+          {/* Submit Button */}
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="w-full bg-rose-600 hover:bg-rose-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed"
+          >
+            {submitting ? 'Submitting...' : 'Submit RCA & Close Incident'}
           </button>
         </div>
       </div>

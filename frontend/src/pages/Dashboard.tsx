@@ -50,103 +50,86 @@ const Dashboard: React.FC = () => {
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '40px' }}>Loading incidents...</div>;
+  if (loading) return <div className="text-center py-12 text-gray-500">Loading incidents...</div>;
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 style={{ margin: 0, fontSize: '24px', color: '#1a1a2e' }}>Incident Dashboard</h1>
-          <p style={{ margin: '4px 0 0', color: '#666', fontSize: '14px' }}>
+          <h1 className="text-2xl font-bold text-gray-900">Incident Dashboard</h1>
+          <p className="text-sm text-gray-500 mt-1">
             {items.length} incidents • Auto-refreshes every 5 seconds
           </p>
         </div>
-        <button onClick={handleTestSignal} style={{
-          backgroundColor: '#e94560',
-          color: '#fff',
-          border: 'none',
-          padding: '10px 20px',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          fontWeight: 600,
-          fontSize: '14px',
-        }}>
+        <button
+          onClick={handleTestSignal}
+          className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+        >
           + Simulate Signal
         </button>
       </div>
 
       {/* Stats Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px' }}>
-        {['OPEN', 'INVESTIGATING', 'RESOLVED', 'CLOSED'].map(status => (
-          <div key={status} style={{
-            backgroundColor: '#fff',
-            borderRadius: '12px',
-            padding: '20px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '32px', fontWeight: 700, color: '#1a1a2e' }}>
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        {[
+          { status: 'OPEN', color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200' },
+          { status: 'INVESTIGATING', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-200' },
+          { status: 'RESOLVED', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' },
+          { status: 'CLOSED', color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-200' },
+        ].map(({ status, color, bg, border }) => (
+          <div key={status} className={`${bg} ${border} border rounded-lg p-5`}>
+            <div className={`text-3xl font-bold ${color}`}>
               {items.filter(i => i.status === status).length}
             </div>
-            <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>{status}</div>
+            <div className="text-sm text-gray-600 mt-1 font-medium">{status}</div>
           </div>
         ))}
       </div>
 
+      {/* Error Message */}
       {error && (
-        <div style={{ backgroundColor: '#f8d7da', color: '#721c24', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
           {error}
         </div>
       )}
 
       {/* Incidents Table */}
-      <div style={{ backgroundColor: '#fff', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <table className="w-full">
           <thead>
-            <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid #e9ecef' }}>
+            <tr className="bg-gray-50 border-b border-gray-200">
               {['Priority', 'Component', 'Status', 'Signals', 'Created', 'MTTR', 'Actions'].map(h => (
-                <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', color: '#666', fontWeight: 600 }}>
+                <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   {h}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {items.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+                <td colSpan={7} className="text-center py-12 text-gray-400">
                   No incidents yet. Click "Simulate Signal" to create one.
                 </td>
               </tr>
             ) : (
               items.map((item, i) => (
-                <tr key={item.id} style={{
-                  borderBottom: '1px solid #f0f0f0',
-                  backgroundColor: i % 2 === 0 ? '#fff' : '#fafafa',
-                  cursor: 'pointer',
-                }}
+                <tr
+                  key={item.id}
+                  className={`hover:bg-gray-50 cursor-pointer transition-colors ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}
                   onClick={() => navigate(`/incident/${item.id}`)}
                 >
-                  <td style={{ padding: '14px 16px' }}><PriorityBadge priority={item.priority} /></td>
-                  <td style={{ padding: '14px 16px', fontWeight: 600, color: '#1a1a2e', fontSize: '14px' }}>
-                    {item.component_id}
-                  </td>
-                  <td style={{ padding: '14px 16px' }}><StatusBadge status={item.status} /></td>
-                  <td style={{ padding: '14px 16px', color: '#666', fontSize: '14px' }}>{item.signal_count}</td>
-                  <td style={{ padding: '14px 16px', color: '#666', fontSize: '13px' }}>{formatTime(item.created_at)}</td>
-                  <td style={{ padding: '14px 16px', color: '#666', fontSize: '14px' }}>{formatMTTR(item.mttr_seconds)}</td>
-                  <td style={{ padding: '14px 16px' }}>
+                  <td className="px-4 py-3"><PriorityBadge priority={item.priority} /></td>
+                  <td className="px-4 py-3 font-semibold text-gray-900 text-sm">{item.component_id}</td>
+                  <td className="px-4 py-3"><StatusBadge status={item.status} /></td>
+                  <td className="px-4 py-3 text-gray-600 text-sm">{item.signal_count}</td>
+                  <td className="px-4 py-3 text-gray-500 text-sm">{formatTime(item.created_at)}</td>
+                  <td className="px-4 py-3 text-gray-600 text-sm font-medium">{formatMTTR(item.mttr_seconds)}</td>
+                  <td className="px-4 py-3">
                     <button
                       onClick={e => { e.stopPropagation(); navigate(`/incident/${item.id}`); }}
-                      style={{
-                        backgroundColor: '#1a1a2e',
-                        color: '#fff',
-                        border: 'none',
-                        padding: '6px 14px',
-                        borderRadius: '6px',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                      }}
+                      className="bg-gray-900 hover:bg-gray-800 text-white px-3 py-1.5 rounded-md text-xs font-semibold transition-colors"
                     >
                       View
                     </button>

@@ -43,94 +43,81 @@ const IncidentDetail: React.FC = () => {
     }
   };
 
-  if (loading) return <div style={{ textAlign: 'center', padding: '40px' }}>Loading...</div>;
-  if (!item) return <div style={{ textAlign: 'center', padding: '40px' }}>Incident not found</div>;
+  if (loading) return <div className="text-center py-12 text-gray-500">Loading...</div>;
+  if (!item) return <div className="text-center py-12 text-gray-500">Incident not found</div>;
 
   const nextStatus = NEXT_STATUS[item.status];
 
   return (
     <div>
-      <button onClick={() => navigate('/')} style={{
-        background: 'none', border: 'none', cursor: 'pointer',
-        color: '#666', fontSize: '14px', marginBottom: '16px', padding: 0,
-      }}>
-        ← Back to Dashboard
+      {/* Back Button */}
+      <button
+        onClick={() => navigate('/')}
+        className="text-gray-500 hover:text-gray-900 text-sm mb-4 transition-colors"
+      >
+        &larr; Back to Dashboard
       </button>
 
       {/* Header Card */}
-      <div style={{
-        backgroundColor: '#fff', borderRadius: '12px',
-        padding: '24px', marginBottom: '20px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-4">
+        <div className="flex justify-between items-start">
           <div>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+            <div className="flex gap-2 mb-3">
               <PriorityBadge priority={item.priority} />
               <StatusBadge status={item.status} />
             </div>
-            <h2 style={{ margin: '0 0 8px', fontSize: '22px', color: '#1a1a2e' }}>
-              {item.component_id}
-            </h2>
-            <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>
+            <h2 className="text-xl font-bold text-gray-900">{item.component_id}</h2>
+            <p className="text-sm text-gray-500 mt-1">
               {item.signal_count} signals linked • Created {new Date(item.created_at).toLocaleString()}
             </p>
           </div>
           {nextStatus && (
-            <button onClick={handleTransition} disabled={updating} style={{
-              backgroundColor: nextStatus === 'CLOSED' ? '#e94560' : '#1a1a2e',
-              color: '#fff', border: 'none',
-              padding: '10px 20px', borderRadius: '8px',
-              cursor: 'pointer', fontWeight: 600, fontSize: '14px',
-            }}>
-              {updating ? 'Updating...' : nextStatus === 'CLOSED' ? '📋 Submit RCA & Close' : `→ Mark ${nextStatus}`}
+            <button
+              onClick={handleTransition}
+              disabled={updating}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                nextStatus === 'CLOSED' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-gray-900 hover:bg-gray-800'
+              }`}
+            >
+              {updating ? 'Updating...' : nextStatus === 'CLOSED' ? 'Submit RCA & Close' : `Mark ${nextStatus}`}
             </button>
           )}
         </div>
 
         {/* Timeline */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginTop: '20px' }}>
+        <div className="grid grid-cols-3 gap-4 mt-5">
           {[
             { label: 'Created', value: new Date(item.created_at).toLocaleString() },
             { label: 'Resolved', value: item.resolved_at ? new Date(item.resolved_at).toLocaleString() : '—' },
             { label: 'MTTR', value: item.mttr_seconds ? `${Math.floor(item.mttr_seconds / 60)} minutes` : '—' },
           ].map(({ label, value }) => (
-            <div key={label} style={{ backgroundColor: '#f8f9fa', borderRadius: '8px', padding: '12px' }}>
-              <div style={{ fontSize: '12px', color: '#999', marginBottom: '4px' }}>{label}</div>
-              <div style={{ fontSize: '14px', fontWeight: 600, color: '#1a1a2e' }}>{value}</div>
+            <div key={label} className="bg-gray-50 rounded-lg p-3">
+              <div className="text-xs text-gray-400 font-medium mb-1">{label}</div>
+              <div className="text-sm font-semibold text-gray-900">{value}</div>
             </div>
           ))}
         </div>
       </div>
 
       {/* Signals */}
-      <div style={{
-        backgroundColor: '#fff', borderRadius: '12px',
-        padding: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-      }}>
-        <h3 style={{ margin: '0 0 16px', color: '#1a1a2e' }}>Raw Signals ({signals.length})</h3>
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <h3 className="text-base font-bold text-gray-900 mb-4">Raw Signals ({signals.length})</h3>
         {signals.length === 0 ? (
-          <p style={{ color: '#999', textAlign: 'center', padding: '20px' }}>No signals yet</p>
+          <p className="text-gray-400 text-center py-6 text-sm">No signals yet</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="space-y-3">
             {signals.map(s => (
-              <div key={s._id} style={{
-                border: '1px solid #e9ecef', borderRadius: '8px',
-                padding: '14px', backgroundColor: '#fafafa',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '13px', color: '#1a1a2e' }}>
-                    {s.signal_type}
-                  </span>
-                  <span style={{ fontSize: '12px', color: '#999' }}>
-                    {new Date(s.received_at).toLocaleString()}
-                  </span>
+              <div key={s._id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="font-semibold text-sm text-gray-900">{s.signal_type}</span>
+                  <span className="text-xs text-gray-400">{new Date(s.received_at).toLocaleString()}</span>
                 </div>
-                <p style={{ margin: '0 0 6px', fontSize: '14px', color: '#333' }}>{s.message}</p>
-                <span style={{
-                  fontSize: '11px', padding: '2px 8px',
-                  borderRadius: '10px', backgroundColor: '#f8d7da', color: '#721c24',
-                }}>
+                <p className="text-sm text-gray-700 mb-2">{s.message}</p>
+                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${
+                  s.severity === 'CRITICAL' ? 'bg-red-100 text-red-700' :
+                  s.severity === 'HIGH' ? 'bg-orange-100 text-orange-700' :
+                  'bg-yellow-100 text-yellow-700'
+                }`}>
                   {s.severity}
                 </span>
               </div>

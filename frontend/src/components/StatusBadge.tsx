@@ -1,45 +1,31 @@
 import React from 'react';
 
-const colors: Record<string, { bg: string; color: string }> = {
-  OPEN:          { bg: '#fff3cd', color: '#856404' },
-  INVESTIGATING: { bg: '#cce5ff', color: '#004085' },
-  RESOLVED:      { bg: '#d4edda', color: '#155724' },
-  CLOSED:        { bg: '#e2e3e5', color: '#383d41' },
+const statusStyles: Record<string, string> = {
+  OPEN: 'bg-yellow-100 text-yellow-800',
+  INVESTIGATING: 'bg-blue-100 text-blue-800',
+  RESOLVED: 'bg-green-100 text-green-800',
+  CLOSED: 'bg-gray-100 text-gray-600',
 };
 
-const PriorityColors: Record<string, { bg: string; color: string }> = {
-  P0: { bg: '#f8d7da', color: '#721c24' },
-  P1: { bg: '#fff3cd', color: '#856404' },
-  P2: { bg: '#d4edda', color: '#155724' },
+const priorityStyles: Record<string, string> = {
+  P0: 'bg-red-100 text-red-800',
+  P1: 'bg-yellow-100 text-yellow-800',
+  P2: 'bg-green-100 text-green-800',
 };
 
 export const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
-  const c = colors[status] || { bg: '#eee', color: '#333' };
+  const style = statusStyles[status] || 'bg-gray-100 text-gray-800';
   return (
-    <span style={{
-      backgroundColor: c.bg,
-      color: c.color,
-      padding: '3px 10px',
-      borderRadius: '12px',
-      fontSize: '12px',
-      fontWeight: 600,
-    }}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${style}`}>
       {status}
     </span>
   );
 };
 
 export const PriorityBadge: React.FC<{ priority: string }> = ({ priority }) => {
-  const c = PriorityColors[priority] || { bg: '#eee', color: '#333' };
+  const style = priorityStyles[priority] || 'bg-gray-100 text-gray-800';
   return (
-    <span style={{
-      backgroundColor: c.bg,
-      color: c.color,
-      padding: '3px 10px',
-      borderRadius: '12px',
-      fontSize: '12px',
-      fontWeight: 700,
-    }}>
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${style}`}>
       {priority}
     </span>
   );

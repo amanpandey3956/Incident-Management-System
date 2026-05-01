@@ -7,9 +7,9 @@ import Navbar from './components/Navbar';
 function App() {
   return (
     <BrowserRouter>
-      <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
         <Navbar />
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px 16px' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/incident/:id" element={<IncidentDetail />} />
