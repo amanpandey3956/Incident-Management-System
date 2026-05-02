@@ -1,0 +1,53 @@
+{
+  "description": "Sample failure events simulating a distributed stack outage",
+  "scenarios": [
+    {
+      "name": "RDBMS Outage",
+      "signals": [
+        {
+          "component_id": "RDBMS_POSTGRES_01",
+          "signal_type": "CONNECTION_REFUSED",
+          "severity": "CRITICAL",
+          "message": "Database connection pool exhausted",
+          "metadata": { "host": "db-01", "port": 5432, "connections": 500 }
+        }
+      ]
+    },
+    {
+      "name": "MCP Host Failure",
+      "signals": [
+        {
+          "component_id": "MCP_HOST_01",
+          "signal_type": "TIMEOUT",
+          "severity": "HIGH",
+          "message": "MCP host not responding after 5000ms",
+          "metadata": { "host": "mcp-01", "timeout_ms": 5000 }
+        }
+      ]
+    },
+    {
+      "name": "Cache Latency Spike",
+      "signals": [
+        {
+          "component_id": "CACHE_CLUSTER_01",
+          "signal_type": "LATENCY_SPIKE",
+          "severity": "WARNING",
+          "message": "Cache response time exceeded 500ms threshold",
+          "metadata": { "latency_ms": 750, "threshold_ms": 500 }
+        }
+      ]
+    },
+    {
+      "name": "Async Queue Backup",
+      "signals": [
+        {
+          "component_id": "QUEUE_KAFKA_01",
+          "signal_type": "QUEUE_DEPTH_EXCEEDED",
+          "severity": "HIGH",
+          "message": "Queue depth exceeded maximum threshold",
+          "metadata": { "queue_depth": 15000, "max_depth": 10000 }
+        }
+      ]
+    }
+  ]
+}
