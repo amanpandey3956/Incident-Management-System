@@ -5,6 +5,8 @@ A mission-critical, production-grade Incident Management System built to monitor
 ---
 
 ## Architecture Diagram
+
+```
                       ┌─────────────────────────────────────────────────┐
                       │              CLIENT / INFRASTRUCTURE             │
                       │         (APIs, Caches, Queues, RDBMS)           │
@@ -48,6 +50,7 @@ A mission-critical, production-grade Incident Management System built to monitor
                                            │   - Incident Detail       │
                                            │   - RCA Form              │
                                            └───────────────────────────┘
+```
 
 ---
 
@@ -88,7 +91,10 @@ This is a critical design decision in the system.
 **The Problem:** If 10,000 signals arrive per second and the database can only write 500/sec, a naive implementation would crash — either running out of memory or overwhelming the database.
 
 **Our Solution — Redis Queue as a Buffer:**
+
+```
 Signals arrive → Rate Limiter → Redis Queue → Worker (controlled pace) → Database
+```
 
 1. **Rate Limiter** — First line of defense. Caps incoming requests at 1000/min per client
 2. **Redis Queue (BullMQ)** — Acts as an in-memory buffer. Signals are accepted instantly into the queue regardless of how fast the database is. Redis can handle millions of items in memory
@@ -102,47 +108,72 @@ This means the system **never crashes under load** — it simply queues the work
 
 ## Setup Instructions
 
+There are two ways to run this project depending on your preference.
+
 ### Prerequisites
 - Docker and Docker Compose
 - Node.js v20+
 - npm
 
-### Quick Start (Docker Compose)
+---
+
+### Option 1 — Full Docker Setup (Recommended for reviewers)
+
+This runs everything — databases, backend, and frontend — as Docker containers with a single command. The `--build` flag builds the backend and frontend Docker images before starting.
 
 ```bash
 # Clone the repository
 git clone https://github.com/amanpandey3956/Incident-Management-System.git
 cd ims-assignment
 
-# Start everything with one command
+# Build and start all services including backend and frontend containers
 docker compose up --build
 
 # Access the application
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:3001
+# Frontend:     http://localhost:3000
+# Backend API:  http://localhost:3001
 # Health check: http://localhost:3001/health
 ```
 
-### Manual Setup (Development)
+---
 
-**1. Start databases:**
+### Option 2 — Manual Setup (Recommended for development)
+
+In this mode, only the databases run in Docker. The backend and frontend run directly on your machine which gives you hot reload and faster iteration.
+
+**Step 1 — Start only the databases in Docker:**
 ```bash
+cd ims-assignment
 docker compose up postgres mongodb redis -d
 ```
 
-**2. Start backend:**
+**Step 2 — Start the backend:**
 ```bash
 cd backend
 npm install
 npm run dev
 ```
 
-**3. Start frontend:**
+You should see:
+```
+✅ Redis connected
+✅ MongoDB connected
+✅ PostgreSQL tables initialized
+Signal worker started
+IMS Backend running on port 3001
+Throughput: 0.00 signals/sec | Total: 0
+```
+
+**Step 3 — Start the frontend (open a new terminal):**
 ```bash
 cd frontend
 npm install
 npm start
 ```
+
+Frontend opens automatically at `http://localhost:3000`.
+
+---
 
 ### Run Tests
 ```bash
@@ -150,12 +181,31 @@ cd backend
 npm test
 ```
 
-### Simulate a Failure Event
-```bash
-# Run the simulation script
-./scripts/simulate-failure.sh
+---
 
-# Or send a manual signal
+## Simulating Failure Events
+
+There are two ways to generate incidents in the system:
+
+### Option 1 — Simulate Signal Button (UI)
+
+The dashboard has a **"+ Simulate Signal"** button in the top right corner. Clicking it sends one random signal to a random component (RDBMS, Cache, API, or Queue) and the resulting incident appears in the live feed immediately. This is useful for a quick demo without any terminal commands.
+
+### Option 2 — Simulation Script (Multi-component cascading failure)
+
+For a realistic production scenario — an RDBMS outage followed by an MCP host failure, cache spike, and queue backup all at once — run the included script.
+
+> **Note:** Run this from inside the `ims-assignment` root folder.
+
+```bash
+cd ims-assignment
+./scripts/simulate-failure.sh
+```
+
+This sends 14 signals across 4 different components and prints a summary of all created work items at the end.
+
+You can also send a manual signal directly via curl:
+```bash
 curl -X POST http://localhost:3001/api/signals \
   -H "Content-Type: application/json" \
   -d '{
@@ -165,6 +215,8 @@ curl -X POST http://localhost:3001/api/signals \
     "message": "Database connection pool exhausted"
   }'
 ```
+
+The exact signal payload structure used in the simulation script is documented in `scripts/sample-signals.json` for reference.
 
 ---
 
@@ -206,6 +258,13 @@ Work item transitions are governed by a strict state machine. Invalid transition
 
 ---
 
+## Additional Documentation
+
+- `scripts/sample-signals.json` — Sample signal payloads showing the exact request format for all component types
+- `docs/PROMPTS.md` — Full breakdown of the assignment, tech stack decisions, and architecture reasoning used while building this system
+
+---
+
 ## Project Structure
 
 ```
@@ -219,7 +278,7 @@ ims-assignment/
 │   │   ├── queues/          # BullMQ queue and worker
 │   │   ├── middleware/      # Rate limiter, error handler
 │   │   ├── utils/           # Metrics, debounce
-│   │   └── tests/           # Unit tests
+│   │   └── __tests__/       # Unit tests
 │   ├── Dockerfile
 │   └── package.json
 ├── frontend/
@@ -228,10 +287,12 @@ ims-assignment/
 │   │   ├── components/      # Navbar, StatusBadge
 │   │   └── services/        # API client
 │   ├── Dockerfile
-│   └── nginx.conf
+│   └── nginx.conf           # Nginx config for React Router + API proxy
 ├── scripts/
-│   ├── simulate-failure.sh  # Bash simulation script
-│   └── sample-signals.json  # Sample signal payloads
+│   ├── simulate-failure.sh  # Multi-component cascading failure simulation
+│   └── sample-signals.json  # Sample signal payload reference
+├── docs/
+│   └── PROMPTS.md           # Planning notes and architecture decisions
 ├── docker-compose.yml
 └── README.md
 ```
