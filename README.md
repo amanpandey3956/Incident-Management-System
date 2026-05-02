@@ -111,7 +111,7 @@ This means the system **never crashes under load** — it simply queues the work
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone https://github.com/amanpandey3956/Incident-Management-System.git
 cd ims-assignment
 
 # Start everything with one command
@@ -207,6 +207,8 @@ Work item transitions are governed by a strict state machine. Invalid transition
 ---
 
 ## Project Structure
+
+```
 ims-assignment/
 ├── backend/
 │   ├── src/
@@ -215,9 +217,9 @@ ims-assignment/
 │   │   ├── services/        # Business logic
 │   │   ├── models/          # TypeScript interfaces + Mongoose schemas
 │   │   ├── queues/          # BullMQ queue and worker
-│   │   ├── middleware/       # Rate limiter, error handler
+│   │   ├── middleware/      # Rate limiter, error handler
 │   │   ├── utils/           # Metrics, debounce
-│   │   └── tests/       # Unit tests
+│   │   └── tests/           # Unit tests
 │   ├── Dockerfile
 │   └── package.json
 ├── frontend/
@@ -232,3 +234,4 @@ ims-assignment/
 │   └── sample-signals.json  # Sample signal payloads
 ├── docker-compose.yml
 └── README.md
+```
